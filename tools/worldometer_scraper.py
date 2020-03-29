@@ -230,7 +230,7 @@ class GlobalCasesLatest():
         #HTML seems to use the 1-indexing system instead of the normal 0-indexing system
         for i in range(1, len(rows)):
             row_elements = rows[i].find_all('td')
-            row_values = [row_el.text.replace('\n', ' ') for row_el in row_elements]
+            row_values = [row_el.text.replace('\n', ' ').replace('+', '') for row_el in row_elements]
 
             #check whether worldometer has extra page for this country
             href_check = row_elements[0].find_all('a', href=True)
