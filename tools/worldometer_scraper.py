@@ -8,9 +8,64 @@ worldometer_path = "https://www.worldometers.info/coronavirus/"
 worldometer_country_path = worldometer_path + "/country/"
 
 ## TODO: Create a Class that can scrape the time series data for all countries that has hrefs in Worldometer!
-class TimeSeries_by_Country():
-    def __init__(self):
-        return
+class CountryTimeSeries():
+    def __init__(self, countries_w_hrefs=None, driver=None, verbose=False):
+        
+        self.driver = self._check_webdriver(driver=driver, verbose=verbose)
+
+        self.countries_w_hrefs = None
+        if countries_w_hrefs is not None:
+            self.countries_w_hrefs = countries_w_hrefs
+        else:
+            self.parse_countries_w_hrefs
+            return
+        
+        self.countries_region_data = None
+        self.countries_timeseries = None
+        
+        self.get_countries_timeseries
+
+        def _check_webdriver(self, driver, verbose=False):
+            if driver is not None:
+                if verbose:
+                    print("driver is already initiated")
+                return driver
+            else:
+                if verbose:
+                    print("no drivers initated yet")
+                cur_driver = webdriver.Chrome()
+                return cur_driver
+
+        def parse_countries_w_hrefs(self):
+            
+            #Get driver back to mainpage first
+            self.driver.get(worldometer_path)
+            mainpage_soup = BeautifulSoup(self.driver.page_source, "html.parser")
+            
+            #parse mainpage table to get all the countries with hrefs
+            latest_table = mainpage_soup.find_all('table')[0]
+            rows = latest_table.find_all('tr')
+
+            #HTML seems to use the 1-indexing system instead of the normal 0-indexing system
+            for i in range(1, len(rows)):
+                row_elements = rows[i].find_all('td')
+
+                #check whether worldometer has extra page for this country
+                href_check = row_elements[0].find_all('a', href=True)
+                if len(href_check) > 0:
+                    self.countries_w_href[row_elements[0].text] = worldometer_path + href_check[0]['href']
+
+            return
+
+        def get_countries_timeseries(self):
+
+            for country in countries_w_hrefs:
+                country_href = countries_w_hrefs[country]
+                self.driver.get(country_href)
+                countrypage_soup = BeautifulSoup(self.driver.page_source, "html.parser")
+
+        
+            return
 
 #For consideration: Separate Time Series as a separate class?
 class GlobalTimeSeries():
@@ -21,7 +76,6 @@ class GlobalTimeSeries():
         if mainpage_soup is not None:
             self.mainpage_soup = mainpage_soup
         else:
-            self._check_webdriver(driver)
             self.mainpage_soup = BeautifulSoup(self.driver.page_source, "html.parser")
         
         #find all dom-s with charts created with Highchart.js 
@@ -157,6 +211,9 @@ class GlobalTimeSeries():
                 return values_dict
 
         return find_values_recur(series_data, values_dict, verbose)
+
+
+
 
 class GlobalCasesLatest():
     '''
