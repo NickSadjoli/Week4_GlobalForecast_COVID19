@@ -138,7 +138,7 @@ class CountriesData():
 
                 #there are potentially more than just one data series projected in one chart (e.g. Closed Cases)
                 series_data = cur_chartData.split("series: [{")[1]
-                values_dict = self.find_all_values(series_data, verbose)
+                values_dict = self.find_all_chart_series_values(series_data, verbose)
 
                 #If there aren't any list of dates to use, use list of dates that are the longest
                 if self.no_dates_provided:
@@ -193,7 +193,7 @@ class CountriesData():
         _, listed_charts = find_highchart_recur(js_text, listed_charts, verbose)
         return listed_charts
 
-    def find_all_values(self, series_data, verbose=False):
+    def find_all_chart_series_values(self, series_data, verbose=False):
 
         values_dict = {}
 
@@ -346,7 +346,7 @@ class GlobalCasesLatest():
 
                 #there are potentially more than just one data series projected in one chart (e.g. Closed Cases)
                 series_data = cur_chartData.split("series: [{")[1]
-                values_dict = self.find_all_values(series_data, verbose)
+                values_dict = self.find_all_chart_series_values(series_data, verbose)
 
                 if len(self.global_timeseries_dict) == 0:
                     self.global_timeseries_dict['dates'] = dates #All WorldoMeter Time series charts assumed to share the same dates
@@ -409,7 +409,7 @@ class GlobalCasesLatest():
         _, listed_charts = find_highchart_recur(js_text, listed_charts, verbose)
         return listed_charts
 
-    def find_all_values(self, series_data, verbose=False):
+    def find_all_chart_series_values(self, series_data, verbose=False):
 
         values_dict = {}
         '''
