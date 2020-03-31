@@ -1,13 +1,16 @@
 from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
 from bs4 import BeautifulSoup
 import sys
 import re
+import json as json
 
 from covid19_scraper_utils import BasicScraper, WorldometerScraper
 
 worldometer_path = "https://www.worldometers.info/coronavirus/"
-worldometer_country_path = worldometer_path + "/country/"
 
 ## TODO: Create a Class that can scrape the time series data for all countries that has hrefs in Worldometer!
 class Worldometer_LatestCountriesData(WorldometerScraper):
@@ -26,6 +29,7 @@ class Worldometer_LatestCountriesData(WorldometerScraper):
         self.countries_w_region_dict = {}
         self.countries_timeseries_dict = {}
         self.countries_timeseries = None
+        self.timeseries_rows = 0
 
         self.dates = dates
 
@@ -44,7 +48,7 @@ class Worldometer_LatestCountriesData(WorldometerScraper):
                           'coronavirus-cases-log': 'Cumulative Confirmed (Logarithmic)',
                           'coronavirus-deaths-linear': 'Cumulative Deaths (Linear)',
                           'coronavirus-deaths-log': 'Cumulative Deaths (Logarithmic)',
-                          'graph-active-cases-total': 'Daily Active Cases',
+                          'graph-active-cases-total': 'Daily Current Active Cases',
                           'graph-cases-daily': 'Daily New Active Cases',
                           'graph-deaths-daily': 'Daily New Deaths',
                           'cases-cured-daily': 'Daily New Case & Recoveries',
@@ -54,20 +58,72 @@ class Worldometer_LatestCountriesData(WorldometerScraper):
         for country in self.countries_w_href:
             country_href = self.countries_w_href[country]
             self.driver.get(country_href)
+            try:
+                element = WebDriverWait(self.driver, 2.2).until(
+                    EC.presence_of_element_located((By.CLASS_NAME, "footerlinks")) )
+            except:
+                pass
             #print("Current country and href:", country, country_href)
             countrypage_soup = BeautifulSoup(self.driver.page_source, "html.parser")
             self.get_country_timeseries(country, countrypage_soup, verbose=verbose)
             self.get_country_regional_data(country, countrypage_soup, verbose=verbose)
 
+        self.timeseries_columns = self.dates
+        self.timeseries_columns.insert(0, 'Data Type')
+        self.timeseries_columns.insert(0, 'Country')
+        print("Number of rows for time series", self.timeseries_rows)
+        #self.countries_timeseries_data = pd.DataFrame(index=range(0, self.timeseries_rows), columns=self.timeseries_columns)
+        self.countries_timeseries_data = pd.DataFrame(columns=self.timeseries_columns)
+
+        i = 0
+        for country in self.countries_timeseries_dict:
+            for data_type in self.countries_timeseries_dict[country]:
+                if data_type == 'dates':
+                    pass
+                else:
+                    data_date = self.countries_timeseries_dict[country][data_type]['chart_dates']
+                    cur_timeseries = pd.Series(index=self.timeseries_columns)
+                    cur_timeseries['Country'] = country
+                    cur_timeseries['Data Type'] = data_type
+                    cur_timeseries[data_date] = self.countries_timeseries_dict[country][data_type]['values']
+                    self.countries_timeseries_data = self.countries_timeseries_data.append(cur_timeseries, ignore_index=True)
+                    '''
+                    self.countries_timeseries_data.loc[i]['Country'] = country
+                    self.countries_timeseries_data.loc[i]['Data Type'] = data_type
+                    self.countries_timeseries_data.loc[i][data_date] = self.countries_timeseries_dict[country][data_type]['values']
+                    '''
+                    i += 1
+
+        self.regional_columns = None
+        self.regional_rows = 0
+        for country in self.countries_w_region_dict:
+            if self.regional_columns is None:
+                self.regional_columns = self.countries_w_region_dict[country]['columns']
+            else:
+                self.regional_columns.append(self.countries_w_region_dict[country]['columns'])
+            self.regional_rows += len(self.countries_w_region_dict[country]['regions'])
+        self.countries_regional_data = pd.DataFrame(index=range(0, self.regional_rows), columns=self.regional_columns)
+
+        j=0
+        for country in self.countries_w_region_dict:
+            for region_data in self.countries_w_region_dict[country]['regions']:
+                self.countries_regional_data.loc[j]['Country'] = country
+                self.countries_regional_data.loc[j]['Region': ] = region_data
+                j += 1
+
         if verbose:
-            print(self.countries_w_region_dict)
-            print(self.countries_timeseries_dict)
-  
+            print(self.countries_timeseries_data)
+            print(self.countries_regional_data)
 
     def _parse_countries_w_href(self):
         
         #Get driver back to mainpage first
         self.driver.get(worldometer_path)
+        try:
+            element = WebDriverWait(self.driver, 2.2).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "footerlinks"))  )
+        except:
+            pass
         mainpage_soup = BeautifulSoup(self.driver.page_source, "html.parser")
         
         #parse mainpage table to get all the countries with hrefs
@@ -94,29 +150,10 @@ class Worldometer_LatestCountriesData(WorldometerScraper):
             country_latest_table = country_latest_table[0]
         
         #self.parse_table(country_latest_table[0])
-        
-        
         rows = country_latest_table.find_all('tr')
         header_row = rows[0].find_all('th')
-        column_names = [head.text.replace('\xa0', ' ') for head in header_row] #&nbsp gets turned into \xa0 by BeautifulSoup
-        self.main_columns = column_names
-        self.num_of_columns = len(column_names)
-        self.countries_w_region_dict[country] = {}
-        '''
-        self.latest_table_data = pd.DataFrame(index=range(0, len(rows[1:])), columns=column_names)
+        self.countries_w_region_dict = self.parse_country_table(country, country_latest_table, cur_dict = self.countries_w_region_dict)
 
-        #HTML seems to use the 1-indexing system instead of the normal 0-indexing system
-        for i in range(1, len(rows)):
-            row_elements = rows[i].find_all('td')
-            row_values = [row_el.text.replace('\n', ' ').replace('+', '') for row_el in row_elements]
-
-            #check whether worldometer has extra page for this country
-            href_check = row_elements[0].find_all('a', href=True)
-            if len(href_check) > 0:
-                self.countries_w_href[row_elements[0].text] = worldometer_path + href_check[0]['href']
-
-            self.latest_table_data.loc[i-1] = row_values
-        '''
         return
 
     def get_country_timeseries(self, country, countrypage_soup, verbose=False):
@@ -129,6 +166,7 @@ class Worldometer_LatestCountriesData(WorldometerScraper):
     def parse_country_charts(self, country, country_charts_elements, verbose=False):
         for i in range(0, len(country_charts_elements)):
             list_of_charts = self.find_all_highcharts(country_charts_elements[i].text, domId_map=self.domId_map, verbose=verbose)
+            #print([domId for domId in list_of_charts])
             for cur_chart_domId in list_of_charts:
                 cur_chartData = list_of_charts[cur_chart_domId]
                 dates = cur_chartData.split("categories: [")[1].split("]")[0].replace('\"', '')
@@ -147,15 +185,31 @@ class Worldometer_LatestCountriesData(WorldometerScraper):
                             self.dates = dates
 
                 if len(self.countries_timeseries_dict[country]) == 0:
-                    self.countries_timeseries_dict['dates'] = dates #All WorldoMeter Time series charts assumed to share the same dates
+                    self.countries_timeseries_dict[country]['dates'] = dates #All WorldoMeter Time series charts assumed to share the same dates
 
                 if len(values_dict) > 1:
                     for val_name in values_dict:
-                        self.countries_timeseries_dict[country][cur_chart_domId + " - " + val_name] = values_dict[val_name]
+                        self.countries_timeseries_dict[country][cur_chart_domId + " - " + val_name] = {}
+                        self.countries_timeseries_dict[country][cur_chart_domId + " - " + val_name]['chart_dates'] = dates
+                        self.countries_timeseries_dict[country][cur_chart_domId + " - " + val_name]['values'] = values_dict[val_name]
                 else:
                     for val_name in values_dict:
-                        self.countries_timeseries_dict[country][cur_chart_domId] = values_dict[val_name]
+                        self.countries_timeseries_dict[country][cur_chart_domId] = {}
+                        self.countries_timeseries_dict[country][cur_chart_domId]['chart_dates'] = dates
+                        self.countries_timeseries_dict[country][cur_chart_domId]['values'] = values_dict[val_name]
             
+        return
+    
+    def write_countriesTimeSeries_to_csv(self, path=None):
+        if path is None:
+            path = "./Worldometer_Countries_TimeSeries.csv"
+        self.countries_timeseries_data.to_csv(path, sep=',', float_format='%.5f')       
+        return
+    
+    def write_countriesRegional_to_csv(self, path=None):
+        if path is None:
+            path = "./Worldometer_Countries_Regional.csv"
+        self.countries_regional_data.to_csv(path, sep=',', float_format='%.5f')
         return
 
 
@@ -221,6 +275,12 @@ class Worldometer_LatestGlobalData(WorldometerScraper):
                 print("no drivers initated yet")
             cur_driver = webdriver.Chrome()
             cur_driver.get(worldometer_path)
+            try:
+                element = WebDriverWait(cur_driver, 3).until(
+                    EC.presence_of_element_located((By.CLASS_NAME, "footerlinks"))
+                )
+            except:
+                pass
             return cur_driver
 
     #### Functions for Scraping the Table from Main Coronavirus Page ###
@@ -270,7 +330,6 @@ class Worldometer_LatestGlobalData(WorldometerScraper):
         return
 
     ####################################################################
-
 
 
     #### Functions for Scraping the Charts from Main Coronavirus Page ###
@@ -327,7 +386,7 @@ class Worldometer_LatestGlobalData(WorldometerScraper):
             i += 1
 
         return
-        
+
     def get_timeseries_dates(self):
         return self.recorded_dates
 
@@ -356,7 +415,9 @@ if __name__=="__main__":
     print("Recorded dates", recorded_dates)
 
     countries_w_href = global_cases.get_countries_w_href()
-    countries_timeseries = Worldometer_LatestCountriesData(countries_w_href=countries_w_href, driver=driver, dates=recorded_dates, verbose=True)
+    countries_data = Worldometer_LatestCountriesData(countries_w_href=countries_w_href, driver=driver, dates=recorded_dates, verbose=True)
+    countries_data.write_countriesTimeSeries_to_csv("./data/Worldometer_Countries_TimeSeries.csv")
+    countries_data.write_countriesRegional_to_csv("./data/Worldometer_Countries_Regional.csv")
 
     #global_timeseries = GlobalTimeSeries(mainpage_soup=mainpage_soup, driver=driver, verbose=True)
 

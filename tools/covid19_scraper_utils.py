@@ -63,10 +63,10 @@ class BasicScraper():
 
         listed_charts = {}
 
-        def find_highchart_recur(js_text, listed_charts, domId_map=None, verbose=False):
+        def find_highchart_recur(js_text, listed_charts, domId_map, verbose=False):
             
-            if verbose:
-                print(js_text.count("Highcharts.chart("))
+            #if verbose: #Only uncomment for debug purposes!
+            #    print(js_text.count("Highcharts.chart("))
             
             if js_text.count("Highcharts.chart(") <= 1:
                 cur_domId = js_text.split("Highcharts.chart(" )[1].split("'")[1]
@@ -80,14 +80,14 @@ class BasicScraper():
             else:
                 cur_domId = js_text.split("Highcharts.chart(")[1].split("'")[1]
                 subsequent_strings = js_text.split("Highcharts.chart('" + cur_domId + "',")[1]
-                cur_chartData, listed_charts = find_highchart_recur(subsequent_strings, listed_charts)
+                cur_chartData, listed_charts = find_highchart_recur(subsequent_strings, listed_charts, domId_map)
                 if domId_map is not None:
                     listed_charts[domId_map[cur_domId]] = cur_chartData
                 else:
                     listed_charts[cur_domId] = cur_chartData
                 return cur_chartData, listed_charts
 
-        _, listed_charts = find_highchart_recur(js_text, listed_charts, domId_map, verbose)
+        _, listed_charts = find_highchart_recur(js_text, listed_charts, domId_map=domId_map, verbose=verbose)
         return listed_charts
 
     def find_all_chart_series_values(self, series_data, verbose=False):
@@ -100,8 +100,8 @@ class BasicScraper():
         values_dict = {}
         def find_values_recur(series_data, values_dict, verbose=False):
             
-            if verbose:
-                print(series_data.count("name: '"))
+            #if verbose: #Only uncomment for debug purposes!
+            #    print(series_data.count("name: '"))
 
             val_name = series_data.split("name: '")[1].split("',")[0]
             values_str = series_data.split("data: [")[1].split("]")[0]#.replace('\"', '')
@@ -163,15 +163,17 @@ class WorldometerScraper(BasicScraper):
         header_row = rows[0].find_all('th')
         column_names = [head.text.replace('\xa0', ' ') for head in header_row] #&nbsp gets turned into \xa0 by BeautifulSoup
         column_names[0] = 'Region'
-        num_of_columns = len(column_names)
+        column_names.insert(0, 'Country')
+        column_names.pop() #remove the 'Source' column
         cur_dict[country] = {}
         cur_dict[country]['columns'] = column_names
-        cur_dict[country]['regions'] = {}
+        cur_dict[country]['regions'] = []
 
         #HTML seems to use the 1-indexing system instead of the normal 0-indexing system
         for i in range(1, len(rows)):
             row_elements = rows[i].find_all('td')
-            row_values = [row_el.text.replace('\n', ' ').replace('+', '') for row_el in row_elements]
-            cur_dict[country]['regions'] = row_values
+            row_values = [row_el.text.replace('\n', ' ').replace('+', '').replace('\xa0', ' ') for row_el in row_elements]
+            #cur_dict[country]['regions] = row_values
+            cur_dict[country]['regions'].append(row_values[:-1])
 
         return cur_dict
