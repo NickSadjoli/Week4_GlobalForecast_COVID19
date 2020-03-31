@@ -71,7 +71,7 @@ class Worldometer_LatestCountriesData(WorldometerScraper):
         self.timeseries_columns = self.dates
         self.timeseries_columns.insert(0, 'Data Type')
         self.timeseries_columns.insert(0, 'Country')
-        print("Number of rows for time series", self.timeseries_rows)
+        
         #self.countries_timeseries_data = pd.DataFrame(index=range(0, self.timeseries_rows), columns=self.timeseries_columns)
         self.countries_timeseries_data = pd.DataFrame(columns=self.timeseries_columns)
 
