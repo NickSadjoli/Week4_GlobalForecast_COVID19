@@ -45,7 +45,7 @@ class CountriesData():
                           'graph-cases-daily': 'Daily New Active Cases',
                           'graph-deaths-daily': 'Daily New Deaths',
                           'cases-cured-daily': 'Daily New Case & Recoveries',
-                          'deaths-cured-outcome': 'Closed cases'
+                          'deaths-cured-outcome': 'Closed Cases'
                           }
                           
         for country in self.countries_w_href:
@@ -54,6 +54,10 @@ class CountriesData():
             countrypage_soup = BeautifulSoup(self.driver.page_source, "html.parser")
             self.get_country_timeseries(country, countrypage_soup, verbose=verbose)
             self.get_country_regional_data(country, countrypage_soup, verbose=verbose)
+
+        if verbose:
+            print(self.countries_w_region_dict)
+            print(self.countries_timeseries_dict)
     
     def _check_webdriver(self, driver, verbose=False):
         if driver is not None:
@@ -89,7 +93,7 @@ class CountriesData():
     def get_country_regional_data(self, country, countrypage_soup, verbose=False):
         country_latest_table = countrypage_soup.find_all('table')
         if len(country_latest_table) == 0:
-            print("country has no tables")
+            print("{} has no tables".format(country))
             return
         else:
             country_latest_table = country_latest_table[0]
