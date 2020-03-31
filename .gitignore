@@ -4,3 +4,7 @@
 
 #VS Code file
 .vscode
+
+#Binary Files
+.bin
+.pyc
