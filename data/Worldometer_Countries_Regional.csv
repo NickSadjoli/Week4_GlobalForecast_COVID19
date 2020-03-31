@@ -1,0 +1,59 @@
+,Country,Region,TotalCases,NewCases,TotalDeaths,NewDeaths,ActiveCases
+0,USA, New York ,"75,795 "," 8,470  "," 1,550 ",208 ," 69,270 "
+1,USA, New Jersey ,"18,696 "," 2,060 ", 267 ,69 ," 18,429 "
+2,USA, Michigan ,"7,615 "," 1,117 ", 259 ,75 ," 7,351 "
+3,USA, California ,"7,453 ", 205 , 149 ,4 ," 7,244 "
+4,USA, Massachusetts ,"6,620 ", 868 , 89 ,33 ," 6,521  "
+5,USA, Florida ,"6,338 ", 634 , 77 ,6 ," 6,261 "
+6,USA, Illinois ,"5,994 ", 937 , 99 ,26 ," 5,893 "
+7,USA, Washington ,"5,250 ", , 210 , ," 4,550 "
+8,USA, Louisiana ,"5,237 "," 1,212 ", 239 ,54 ," 4,998 "
+9,USA, Pennsylvania ,"4,843 ", 689 , 63 ,12 ," 4,780 "
+10,USA, Georgia ,"3,817 ", 785 , 108 ,6 ," 3,709 "
+11,USA,  Texas ,"3,322 ", 416 , 49 ,8 ," 3,166 "
+12,USA, Connecticut ,"3,128 ", 557 , 69 ,33 ," 3,059 "
+13,USA, Colorado ,"2,627 ", , 51 , ," 2,576 "
+14,USA, Tennessee ,"2,389 ", 461 , 23 ,10 ," 2,245 "
+15,USA, Ohio ,"2,199 ", 266 , 55 ,16 ," 2,144 "
+16,USA, Indiana ,"2,159 ", 373 , 49 ,14 ," 2,110 "
+17,USA, Maryland ,"1,660 ", 247 , 18 ,3 ," 1,589 "
+18,USA, North Carolina ,"1,498 ", 125 , 8 ,1 ," 1,485 "
+19,USA, Wisconsin ,"1,351 ", 66 , 25 ,2 ," 1,324 "
+20,USA, Missouri ,"1,327 ", 296 , 14 ,1 ," 1,311 "
+21,USA, Arizona ,"1,289 ", 132 , 24 ,4 ," 1,262 "
+22,USA, Virginia ,"1,250 ", 230 , 27 ,2 ," 1,221 "
+23,USA, Nevada ,"1,113 ", 105 , 18 ,3 ," 1,095 "
+24,USA, South Carolina ,"1,083 ", 158 , 22 ,4 ," 1,061 "
+25,USA, Alabama ,974 , 39 ,  13 ,2 , 961 
+26,USA, Mississippi ,937 , 90 , 20 ,4 , 917 
+27,USA, Utah ,887 , 81 , 5 ,1 , 882 
+28,USA, Oregon ,690 , 84 , 18 ,2 , 672 
+29,USA, Minnesota ,629 , 53 , 12 ,2 , 483 
+30,USA, Kentucky ,591 , 111 , 17 ,6 , 510 
+31,USA, Oklahoma ,565 , 84 , 23 ,6 , 541 
+32,USA, Arkansas ,523 , 15 , 8 ,1 , 480 
+33,USA, Iowa ,497 , 73 , 7 ,1 , 472 
+34,USA, District Of Columbia ,495 , , 9 , , 435 
+35,USA, Rhode Island ,488 , 80 , 8 ,4 , 480 
+36,USA, Idaho ,476 , 61 , 9 ,2 , 467 
+37,USA, Kansas ,428 , 60  , 9 ,1 , 419 
+38,USA, Delaware ,319 , 55 , 10 ,4 , 287 
+39,USA, New Hampshire ,314 , , 3 , , 311 
+40,USA, Maine ,303 , 28 , 5 ,2 , 230 
+41,USA, Vermont ,293 , 37 , 13 ,1 , 280 
+42,USA, New Mexico ,281 , , 4 , , 277 
+43,USA, Hawaii ,204 , , , , 204 
+44,USA, Montana ,185 , 14 ,  4 , , 181 
+45,USA, Nebraska ,153 , , 3 ,1 , 150 
+46,USA, West Virginia ,145 , , 1 , , 144 
+47,USA, North Dakota ,122 , 13 , 3 ,1 , 94 
+48,USA, Alaska ,119 , 5 , 3 ,1 , 116 
+49,USA, Wyoming ,109 , 14 , , , 83 
+50,USA, South Dakota ,101 , , 1 , , 66 
+51,USA, Guam ,69 , 11 , 2 ,1 , 60 
+52,USA, Northern Mariana Islands ,2 , , , , 2 
+53,USA, Puerto Rico ,239 , 65 , 8 ,2 , 227 
+54,USA, United States Virgin Islands ,30 , , , , 9 
+55,USA, Wuhan Repatriated ,3 , , , , 3 
+56,USA, Diamond Princess Cruise ,46 , , , , 46 
+57,USA,Total:,"185,270","21,482","3,780",639,"175,143"
