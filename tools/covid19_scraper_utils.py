@@ -19,9 +19,9 @@ worldometer_path = ("https://www.worldometers.info/coronavirus/")
 class BasicScraper():
     def __init__(self, driver=None, verbose=False, default_site="https://www.worldometers.info/coronavirus/"):
         
-        self.driver = self._check_webdriver(driver=driver, default_site=default_site, verbose=verbose)
+        self.driver = self.check_webdriver(driver=driver, default_site=default_site, verbose=verbose)
 
-    def _check_webdriver(self, driver, default_site, verbose=False):
+    def check_webdriver(self, driver, default_site, verbose=False):
         if driver is not None:
             if verbose:
                 print("driver is already initiated")
@@ -49,12 +49,12 @@ class BasicScraper():
         for i in range(1, len(rows)):
             row_elements = rows[i].find_all('td')
             row_values = [row_el.text.replace('\n', ' ').replace('+', '') for row_el in row_elements]
-            self.latest_table_data.loc[i-1] = row_values
+            table_data.loc[i-1] = row_values
 
         return table_data, column_names, num_of_columns
 
 
-    def find_all_highcharts(self, js_text, verbose=False):
+    def find_all_highcharts(self, js_text, domId_map=None, verbose=False):
         '''
         Function that parses a given js_text string for all possible strings
         containing a Highchart.js section. Returns dictionary containing
@@ -63,7 +63,7 @@ class BasicScraper():
 
         listed_charts = {}
 
-        def find_highchart_recur(js_text, listed_charts, verbose=False):
+        def find_highchart_recur(js_text, listed_charts, domId_map=None, verbose=False):
             
             if verbose:
                 print(js_text.count("Highcharts.chart("))
@@ -71,17 +71,23 @@ class BasicScraper():
             if js_text.count("Highcharts.chart(") <= 1:
                 cur_domId = js_text.split("Highcharts.chart(" )[1].split("'")[1]
                 previous_data, cur_chartData = js_text.split("Highcharts.chart('" + cur_domId + "',")
-                listed_charts[self.domId_map[cur_domId]] = cur_chartData
+                if domId_map is not None:
+                    listed_charts[domId_map[cur_domId]] = cur_chartData
+                else:
+                    listed_charts[cur_domId] = cur_chartData
                 #listed_charts[cur_domId] = cur_chartData
                 return previous_data, listed_charts
             else:
                 cur_domId = js_text.split("Highcharts.chart(")[1].split("'")[1]
                 subsequent_strings = js_text.split("Highcharts.chart('" + cur_domId + "',")[1]
                 cur_chartData, listed_charts = find_highchart_recur(subsequent_strings, listed_charts)
-                listed_charts[self.domId_map[cur_domId]] = cur_chartData
+                if domId_map is not None:
+                    listed_charts[domId_map[cur_domId]] = cur_chartData
+                else:
+                    listed_charts[cur_domId] = cur_chartData
                 return cur_chartData, listed_charts
 
-        _, listed_charts = find_highchart_recur(js_text, listed_charts, verbose)
+        _, listed_charts = find_highchart_recur(js_text, listed_charts, domId_map, verbose)
         return listed_charts
 
     def find_all_chart_series_values(self, series_data, verbose=False):
@@ -113,11 +119,12 @@ class BasicScraper():
 
 
 class WorldometerScraper(BasicScraper):
-    def __init__(self):
-        return
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
     
     #### Functions for Scraping the Table from Main Coronavirus Page ###
-    def parse_worldometer_table(self, table_element):
+    def parse_global_worldometer_table(self, table_element):
         '''
         Special variation of the normal parse_table that also returns any countries with potential hrefs to a more 
         dedicated country page on the Worldometer site.
@@ -128,7 +135,7 @@ class WorldometerScraper(BasicScraper):
         num_of_columns = len(column_names)
         table_data = pd.DataFrame(index=range(0, len(rows[1:])), columns=column_names)
 
-        countries_w_hrefs = {}
+        countries_w_href = {}
 
         #HTML seems to use the 1-indexing system instead of the normal 0-indexing system
         for i in range(1, len(rows)):
@@ -142,4 +149,29 @@ class WorldometerScraper(BasicScraper):
 
             table_data.loc[i-1] = row_values
 
-        return table_data, column_names, num_of_columns, countries_w_hrefs
+        return table_data, column_names, num_of_columns, countries_w_href
+
+    def parse_country_table(self, country, table_element, cur_dict=None):
+        '''
+        Special variation of the normal parse_table for a specific Worldometer Country Site. 
+        Returns a dictionary containing data on columns and all of the country's region instead.
+        '''
+        if cur_dict is None:
+            cur_dict = {}
+
+        rows = table_element.find_all('tr')
+        header_row = rows[0].find_all('th')
+        column_names = [head.text.replace('\xa0', ' ') for head in header_row] #&nbsp gets turned into \xa0 by BeautifulSoup
+        column_names[0] = 'Region'
+        num_of_columns = len(column_names)
+        cur_dict[country] = {}
+        cur_dict[country]['columns'] = column_names
+        cur_dict[country]['regions'] = {}
+
+        #HTML seems to use the 1-indexing system instead of the normal 0-indexing system
+        for i in range(1, len(rows)):
+            row_elements = rows[i].find_all('td')
+            row_values = [row_el.text.replace('\n', ' ').replace('+', '') for row_el in row_elements]
+            cur_dict[country]['regions'] = row_values
+
+        return cur_dict
