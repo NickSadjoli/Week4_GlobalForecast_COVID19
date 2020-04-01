@@ -27,6 +27,13 @@ class Population():
     def get_country_index(self,country):
         # If country doesn't exist return None
         
+        aliases = {}
+        aliases["US"] = "United States"
+        aliases["Brunei"] = 'Brunei '
+        aliases["Taiwan*"] = "Taiwan"
+        aliases["Korea, South"] = "South Korea"
+        if(country in aliases.keys()):
+            country = aliases[country]
         ix = np.where(self.country_list==country)[0]
         if(len(ix)==0):
             return None
@@ -57,7 +64,12 @@ class Population():
         if(ix is None):
             return None
         
-        return self.median_age_list[ix]
+        median_age = self.median_age_list[ix]
+        
+        if(median_age == 'N.A.'):
+            return None
+        else:
+            return string_to_integer(median_age)
     
     
 if __name__ =="__main__":
