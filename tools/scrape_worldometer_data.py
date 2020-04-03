@@ -1,3 +1,11 @@
+"""
+Contains the functions and Scraper classes used for scraping Data of Countries from the
+Worldometer Websites, including the country-specifc pages. 
+
+Authored by: Nicholas Sadjoli (Github @NickSadjoli)
+Co-authored by: Josephine Monica (Github @josephinemonica)
+"""
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
