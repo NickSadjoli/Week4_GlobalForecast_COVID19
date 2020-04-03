@@ -7,4 +7,5 @@
 
 #Binary Files
 .bin
-.pyc
+__pycache__/
+*.py[cod]
