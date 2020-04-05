@@ -98,11 +98,11 @@ def get_climate_data(driver, verbose=False):
 def update_all_data(verbose=False):
 
     driver = webdriver.Chrome()
-    #update_worldometer_data(driver)
+    update_worldometer_data(driver)
     population_data = get_worldometer_population_data(driver)
     population_data.to_csv(default_data_dir + "Worldometer_Population_Latest.csv")
-    #full_climate_data = get_climate_data(driver)
-    #full_climate_data.to_csv(default_data_dir + "Climate_Data_Worldbank.csv")
+    full_climate_data = get_climate_data(driver)
+    full_climate_data.to_csv(default_data_dir + "Climate_Data_Worldbank.csv")
 
     return
 
