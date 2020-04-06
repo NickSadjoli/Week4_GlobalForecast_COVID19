@@ -94,6 +94,30 @@ def get_climate_data(driver, verbose=False):
 
     return full_climate_data
 
+def get_covidtracking_test_data():
+    """
+    Get test data from The COVID Tracking Project, for testing data collected in the US region.
+
+    Writes out to several dataFrames and saves to more .csv-s as well
+    """
+    covidtracking_api_path =  "https://covidtracking.com/api/"
+
+    perstates_timeseries_path = covidtracking_api_path + "v1/states/daily.csv"
+    perstates_current_values_path = covidtracking_api_path + "v1/states/current.csv"
+    us_whole_timeseries_path = covidtracking_api_path + "us/daily.csv" 
+    us_whole_current_values_path = covidtracking_api_path  + "v1/us/current.csv"
+
+    us_perstates_timeseries     = pd.read_csv(perstates_timeseries_path)
+    us_perstates_current_values = pd.read_csv(perstates_current_values_path)
+    us_whole_timeseries         = pd.read_csv(us_whole_timeseries_path)
+    us_whole_current_values     = pd.read_csv(us_whole_current_values_path)
+
+    us_perstates_timeseries.to_csv("./data/COVIDTracking-US_PerStates-Timeseries.csv")
+    us_perstates_current_values.to_csv("./data/COVIDTracking-US_PerStates-CurVal.csv")
+    us_whole_timeseries.to_csv("./data/COVIDTracking-US_Whole-Timeseries.csv")
+    us_whole_current_values.to_csv("./data/COVIDTracking-US_Whole-CurVal.csv")
+
+    return
 
 def update_all_data(verbose=False):
 
@@ -103,6 +127,7 @@ def update_all_data(verbose=False):
     population_data.to_csv(default_data_dir + "Worldometer_Population_Latest.csv")
     full_climate_data = get_climate_data(driver)
     full_climate_data.to_csv(default_data_dir + "Climate_Data_Worldbank.csv")
+    get_covidtracking_test_data()
 
     return
 
