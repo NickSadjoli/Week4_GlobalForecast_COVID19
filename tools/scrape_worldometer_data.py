@@ -15,6 +15,7 @@ from bs4 import BeautifulSoup
 import sys
 import re
 import json as json
+import time
 
 from covid19_scraper_utils import BasicScraper, WorldometerScraper
 
@@ -66,11 +67,14 @@ class Worldometer_LatestCountriesData(WorldometerScraper):
         for country in self.countries_w_href:
             country_href = self.countries_w_href[country]
             self.driver.get(country_href)
+            '''
             try:
                 element = WebDriverWait(self.driver, 2.2).until(
                     EC.presence_of_element_located((By.CLASS_NAME, "footerlinks")) )
             except:
                 pass
+            '''
+            time.sleep(3)
             #print("Current country and href:", country, country_href)
             countrypage_soup = BeautifulSoup(self.driver.page_source, "html.parser")
             self.get_country_timeseries(country, countrypage_soup, verbose=verbose)
