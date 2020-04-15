@@ -53,6 +53,37 @@ class BasicScraper():
 
         return table_data, column_names, num_of_columns
 
+    def parse_worldometertable_w_hrefs(self, table_element, href_element_pos, cur_path):
+        '''
+        Special variation of the normal parse_table that also returns any country elements (specifically countries) any countries in 
+        a Worldometer table with potential href elements to a more dedicated page on the Worldometer site. Note that the href_element_pos 
+        variable is expected as an integer which specifies the position of the element in each row that is suspected to have an href 
+        trait.
+
+        A more generic version of the parse_global_worldometer_table function. 
+        '''
+        rows = table_element.find_all('tr')
+        header_row = rows[0].find_all('th')
+        column_names = [head.text.replace('\xa0', ' ') for head in header_row] #&nbsp gets turned into \xa0 by BeautifulSoup
+        num_of_columns = len(column_names)
+        table_data = pd.DataFrame(index=range(0, len(rows[1:])), columns=column_names)
+
+        countries_w_href = {}
+
+        #HTML seems to use the 1-indexing system instead of the normal 0-indexing system
+        for i in range(1, len(rows)):
+            row_elements = rows[i].find_all('td')
+            row_values = [row_el.text.replace('\n', ' ').replace('+', '') for row_el in row_elements]
+
+            #check whether worldometer has extra page for this country
+            href_check = row_elements[href_element_pos].find_all('a', href=True)
+            if len(href_check) > 0:
+                countries_w_href[row_elements[href_element_pos].text] = cur_path + href_check[0]['href']
+
+            table_data.loc[i-1] = row_values
+
+        return table_data, column_names, num_of_columns, countries_w_href
+
 
     def find_all_highcharts(self, js_text, domId_map=None, verbose=False):
         '''
